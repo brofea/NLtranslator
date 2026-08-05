@@ -11,7 +11,7 @@ const TABLE: string[] = [
 
 const REVERSE = new Map<string, number>(TABLE.map((ch, i) => [ch, i]));
 
-export function encodeToNairong(text: string): string {
+export function encodeToNailong(text: string): string {
   const units = [...text];
   const zwc = bytesToZwc(new TextEncoder().encode(text));
   const n = units.length;
@@ -34,7 +34,7 @@ function bytesToZwc(bytes: Uint8Array): string {
   return zwc;
 }
 
-export function decodeFromNairong(input: string): string {
+export function decodeFromNailong(input: string): string {
   let zwc = "";
   for (const ch of input) {
     if (ch === HA) continue;

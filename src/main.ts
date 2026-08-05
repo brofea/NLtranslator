@@ -1,5 +1,5 @@
 import "./style.css";
-import { encodeToNairong, decodeFromNairong } from "./nairong";
+import { encodeToNailong, decodeFromNailong } from "./nailong";
 
 const app = document.querySelector<HTMLDivElement>("#app")!;
 
@@ -75,12 +75,12 @@ document.querySelector("#btn-encode")!.addEventListener("click", () => {
     setOutput("");
     return;
   }
-  setOutput(encodeToNairong(text));
+  setOutput(encodeToNailong(text));
 });
 
 document.querySelector("#btn-decode")!.addEventListener("click", () => {
   try {
-    source.value = decodeFromNairong(output.value);
+    source.value = decodeFromNailong(output.value);
   } catch (err) {
     stats.textContent = err instanceof Error ? err.message : "解析失败";
     stats.classList.add("stats-error");
