@@ -24,7 +24,10 @@ app.innerHTML = `
       <section class="panel">
         <div class="label-row">
           <label class="label" for="output">奶龙语</label>
-          <button id="btn-copy" class="btn btn-mini">复制结果</button>
+          <div class="copy-area">
+            <span id="copy-tip" class="copy-tip"></span>
+            <button id="btn-copy" class="btn btn-mini">复制结果</button>
+          </div>
         </div>
         <textarea id="output" class="textarea" rows="6" spellcheck="false"
           placeholder="翻译结果会显示在这里……"></textarea>
@@ -38,6 +41,16 @@ app.innerHTML = `
 const source = document.querySelector<HTMLTextAreaElement>("#source")!;
 const output = document.querySelector<HTMLTextAreaElement>("#output")!;
 const stats = document.querySelector<HTMLParagraphElement>("#stats")!;
+const copyTip = document.querySelector<HTMLSpanElement>("#copy-tip")!;
+
+let tipTimer: number | undefined;
+
+function showTip(message: string) {
+  copyTip.textContent = message;
+  copyTip.classList.add("visible");
+  window.clearTimeout(tipTimer);
+  tipTimer = window.setTimeout(() => copyTip.classList.remove("visible"), 2000);
+}
 
 function showStats(text: string) {
   let haCount = 0;
@@ -78,12 +91,11 @@ document.querySelector("#btn-copy")!.addEventListener("click", async () => {
   if (!output.value) return;
   try {
     await navigator.clipboard.writeText(output.value);
-    stats.textContent = "已复制到剪贴板";
-    stats.classList.remove("stats-error");
+    showTip("已复制到剪贴板");
   } catch {
     output.select();
     document.execCommand("copy");
-    stats.textContent = "已复制到剪贴板";
+    showTip("已复制到剪贴板");
   }
 });
 
