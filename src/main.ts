@@ -35,6 +35,19 @@ app.innerHTML = `
       </section>
     </main>
 
+    <section class="usage">
+      <h2>使用说明</h2>
+      <!-- 在这里插入链接 -->
+      <p>📖 详细教程请访问：<a href="https://www.bilibili.com/video/BV1Tk6ZB3EAE" target="_blank">奶龙语官方指南</a></p>
+      <ol>
+        <li>在左侧「原文」框里输入想说的话。</li>
+        <li>点击「翻译成奶龙语」，右侧生成一串奶龙语。</li>
+        <li>点击「复制结果」，把它发给朋友或发到群里。</li>
+        <li>收到奶龙语后，粘贴到右侧「奶龙语」框，点击「解译回原文」即可还原。</li>
+      </ol>
+      <p class="usage-note">提示：复制奶龙语时请完整复制，不要增删或改动任何字符，否则可能无法还原。</p>
+</section>
+
   </div>
 `;
 
