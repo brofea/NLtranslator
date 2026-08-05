@@ -41,16 +41,14 @@ const stats = document.querySelector<HTMLParagraphElement>("#stats")!;
 
 function showStats(text: string) {
   let haCount = 0;
-  let zwCount = 0;
   for (const ch of text) {
     if (ch === "\u54C8") haCount++;
-    else if (ch === "\u200B" || ch === "\u200C") zwCount++;
   }
   if (text.length === 0) {
     stats.textContent = "";
     return;
   }
-  stats.textContent = `共 ${haCount} 个「哈」，${zwCount} 个零宽字符，${text.length} 个字符`;
+  stats.textContent = `共 ${haCount} 个「哈」`;
 }
 
 function setOutput(text: string) {

@@ -50,30 +50,27 @@ body {
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 12px 32px rgba(185, 140, 20, 0.16);
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: stretch;
   gap: 22px;
 }
 
 .panel {
-  flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: 32px 1fr 42px;
   gap: 10px;
 }
 
-.label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--muted);
-  letter-spacing: 1px;
-}
-
+.label,
 .label-row {
   display: flex;
   align-items: center;
+  height: 32px;
+}
+
+.label-row {
   justify-content: space-between;
 }
 
@@ -101,13 +98,14 @@ body {
 
 .actions {
   display: flex;
+  align-items: center;
   gap: 12px;
 }
 
 .btn {
   border: none;
   border-radius: 999px;
-  padding: 11px 26px;
+  padding: 10px 26px;
   font-size: 15px;
   font-weight: 600;
   cursor: pointer;
@@ -151,6 +149,7 @@ body {
 
 .stats {
   margin: 0;
+  align-self: center;
   font-size: 13px;
   color: var(--muted);
   min-height: 18px;
@@ -162,6 +161,6 @@ body {
 
 @media (max-width: 720px) {
   .card {
-    flex-direction: column;
+    grid-template-columns: 1fr;
   }
 }
