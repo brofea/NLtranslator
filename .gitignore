@@ -29,3 +29,11 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+
+# Agent 工作文件
+.codex
+.claude
+.opencode
+.omo
+.trellis
+AGENTS.md
