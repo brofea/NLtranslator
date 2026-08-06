@@ -11,92 +11,141 @@ app.innerHTML = `
     </header>
 
     <main class="card">
+      <button id="btn-swap" class="swap-btn" type="button" title="切换翻译方向" aria-label="切换翻译方向">
+        <span class="swap-icon">⇄</span>
+      </button>
+
       <section class="panel">
-        <label class="label" for="source">原文</label>
+        <label id="source-label" class="label" for="source">自然语言</label>
         <textarea id="source" class="textarea" rows="6"
           placeholder="在这里输入要翻译成奶龙语的内容……"></textarea>
         <div class="actions">
-          <button id="btn-encode" class="btn btn-primary">翻译成奶龙语</button>
-          <button id="btn-decode" class="btn btn-ghost">解译回原文</button>
+          <button id="btn-translate" class="btn btn-primary" type="button">翻译</button>
         </div>
       </section>
 
       <section class="panel">
-        <div class="label-row">
-          <label class="label" for="output">奶龙语</label>
-          <div class="copy-area">
-            <span id="copy-tip" class="copy-tip"></span>
-            <button id="btn-copy" class="btn btn-mini">复制结果</button>
-          </div>
-        </div>
-        <textarea id="output" class="textarea" rows="6" spellcheck="false"
+        <label id="output-label" class="label" for="output">奶龙语言</label>
+        <textarea id="output" class="textarea textarea-display" rows="6" spellcheck="false" readonly
           placeholder="翻译结果会显示在这里……"></textarea>
-        <p id="stats" class="stats"></p>
+        <div class="actions actions-between">
+          <p id="stats" class="stats"></p>
+          <button id="btn-copy" class="btn btn-ghost" type="button">复制结果</button>
+        </div>
       </section>
     </main>
 
+    <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+
     <section class="usage">
       <h2>使用说明</h2>
-      <!-- 在这里插入链接 -->
       <p>📖 详细教程请访问：<a href="https://www.bilibili.com/video/BV1Tk6ZB3EAE" target="_blank">奶龙语官方指南</a></p>
       <ol>
-        <li>在左侧「原文」框里输入想说的话。</li>
-        <li>点击「翻译成奶龙语」，右侧生成一串奶龙语。</li>
-        <li>点击「复制结果」，把它发给朋友或发到群里。</li>
-        <li>收到奶龙语后，粘贴到右侧「奶龙语」框，点击「解译回原文」即可还原。</li>
+        <li>在左侧输入想说的话，点击「翻译」，右侧生成一串奶龙语。</li>
+        <li>点击右侧「复制结果」，把它发给朋友或发到群里。</li>
+        <li>收到奶龙语后，点击顶部 ⇄ 按钮切换到「奶龙语言 → 自然语言」。</li>
+        <li>把奶龙语粘贴到左侧，点击「翻译」即可还原。</li>
       </ol>
-      <p class="usage-note">提示：复制奶龙语时请完整复制，不要增删或改动任何字符，否则可能无法还原。</p>
-</section>
-
+      <p class="usage-note">提示：复制奶龙语时请完整复制，不要增删或改动任何字符，否则无法还原。</p>
+    </section>
   </div>
 `;
+
+type Direction = "toNailong" | "toNatural";
 
 const source = document.querySelector<HTMLTextAreaElement>("#source")!;
 const output = document.querySelector<HTMLTextAreaElement>("#output")!;
 const stats = document.querySelector<HTMLParagraphElement>("#stats")!;
-const copyTip = document.querySelector<HTMLSpanElement>("#copy-tip")!;
+const sourceLabel = document.querySelector<HTMLLabelElement>("#source-label")!;
+const outputLabel = document.querySelector<HTMLLabelElement>("#output-label")!;
+const swapBtn = document.querySelector<HTMLButtonElement>("#btn-swap")!;
+const toast = document.querySelector<HTMLDivElement>("#toast")!;
 
-let tipTimer: number | undefined;
+let direction: Direction = "toNailong";
+let toastTimer: number | undefined;
 
-function showTip(message: string) {
-  copyTip.textContent = message;
-  copyTip.classList.add("visible");
-  window.clearTimeout(tipTimer);
-  tipTimer = window.setTimeout(() => copyTip.classList.remove("visible"), 2000);
+const DIRECTION_META: Record<
+  Direction,
+  { source: string; output: string; sourcePlaceholder: string; outputPlaceholder: string }
+> = {
+  toNailong: {
+    source: "自然语言",
+    output: "奶龙语言",
+    sourcePlaceholder: "在这里输入要翻译成奶龙语的内容……",
+    outputPlaceholder: "翻译结果会显示在这里……",
+  },
+  toNatural: {
+    source: "奶龙语言",
+    output: "自然语言",
+    sourcePlaceholder: "把收到的奶龙语粘贴到这里……",
+    outputPlaceholder: "解码结果会显示在这里……",
+  },
+};
+
+function showToast(message: string, variant: "error" | "success" = "error") {
+  toast.textContent = message;
+  toast.classList.toggle("toast-success", variant === "success");
+  toast.classList.add("visible");
+  window.clearTimeout(toastTimer);
+  toastTimer = window.setTimeout(() => toast.classList.remove("visible"), 2500);
 }
 
 function showStats(text: string) {
+  if (direction !== "toNailong" || text.length === 0) {
+    stats.textContent = "";
+    stats.classList.add("hidden");
+    return;
+  }
   let haCount = 0;
   for (const ch of text) {
     if (ch === "\u54C8") haCount++;
   }
-  if (text.length === 0) {
-    stats.textContent = "";
-    return;
-  }
   stats.textContent = `共 ${haCount} 个「哈」`;
+  stats.classList.remove("hidden");
+}
+
+function refreshStats() {
+  showStats(output.value);
 }
 
 function setOutput(text: string) {
   output.value = text;
-  showStats(text);
+  refreshStats();
 }
 
-document.querySelector("#btn-encode")!.addEventListener("click", () => {
+function applyDirection() {
+  const meta = DIRECTION_META[direction];
+  sourceLabel.textContent = meta.source;
+  outputLabel.textContent = meta.output;
+  source.placeholder = meta.sourcePlaceholder;
+  output.placeholder = meta.outputPlaceholder;
+  swapBtn.classList.toggle("flipped", direction === "toNatural");
+  refreshStats();
+}
+
+swapBtn.addEventListener("click", () => {
+  const sourceText = source.value;
+  source.value = output.value;
+  output.value = sourceText;
+  direction = direction === "toNailong" ? "toNatural" : "toNailong";
+  applyDirection();
+});
+
+document.querySelector("#btn-translate")!.addEventListener("click", () => {
   const text = source.value;
   if (!text.trim()) {
     setOutput("");
     return;
   }
-  setOutput(encodeToNailong(text));
-});
-
-document.querySelector("#btn-decode")!.addEventListener("click", () => {
+  if (direction === "toNailong") {
+    setOutput(encodeToNailong(text));
+    return;
+  }
   try {
-    source.value = decodeFromNailong(output.value);
-  } catch (err) {
-    stats.textContent = err instanceof Error ? err.message : "解析失败";
-    stats.classList.add("stats-error");
+    setOutput(decodeFromNailong(text));
+  } catch {
+    setOutput("");
+    showToast("翻译失败，奶龙语的语法有误哦");
   }
 });
 
@@ -104,15 +153,11 @@ document.querySelector("#btn-copy")!.addEventListener("click", async () => {
   if (!output.value) return;
   try {
     await navigator.clipboard.writeText(output.value);
-    showTip("已复制到剪贴板");
   } catch {
     output.select();
     document.execCommand("copy");
-    showTip("已复制到剪贴板");
   }
+  showToast("已复制到剪贴板", "success");
 });
 
-output.addEventListener("input", () => {
-  showStats(output.value);
-  stats.classList.remove("stats-error");
-});
+applyDirection();
