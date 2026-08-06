@@ -29,8 +29,8 @@ app.innerHTML = `
         <textarea id="output" class="textarea textarea-display" rows="6" spellcheck="false" readonly
           placeholder="翻译结果会显示在这里……"></textarea>
         <div class="actions actions-between">
-          <p id="stats" class="stats"></p>
           <button id="btn-copy" class="btn btn-ghost" type="button">复制结果</button>
+          <p id="stats" class="stats"></p>
         </div>
       </section>
     </main>
